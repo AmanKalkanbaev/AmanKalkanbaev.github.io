@@ -57,7 +57,12 @@ delite.addEventListener('mousedown', function() {
     fetch(`https://it-academy-ajax-table-14a18-default-rtdb.firebaseio.com/chat.json`, {
         method: "DELETE"
     })
-        .then(function (response) {
-            div.remove();
-        })
+    .then(function (response) {
+        div.remove();
+    })
+
+    setTimeout(function() {
+            location.reload();
+    }, 300);
+
 });
