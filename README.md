@@ -1,1 +1,0 @@
-# AmanKalkanbaev.github.io
