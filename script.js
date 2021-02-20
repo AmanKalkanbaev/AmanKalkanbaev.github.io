@@ -5,9 +5,8 @@ let button = document.querySelector('#button');
 let chat = document.querySelector('#chat');
 let delite = document.querySelector('#delite');
 
-// setTimeout(function() {
-//     location.reload();
-//   }, 1000);
+
+
 button.addEventListener('mousedown', function(){
     let div = document.createElement("div");
     let span = document.createElement("span");
@@ -32,7 +31,8 @@ button.addEventListener('mousedown', function(){
     });
 
 });
-fetch('https://it-academy-ajax-table-14a18-default-rtdb.firebaseio.com/chat.json')
+setTimeout(function() {
+    fetch('https://it-academy-ajax-table-14a18-default-rtdb.firebaseio.com/chat.json')
     .then(function (response) {
         return response.json();
     })
@@ -52,6 +52,9 @@ fetch('https://it-academy-ajax-table-14a18-default-rtdb.firebaseio.com/chat.json
             div.append(spanSec);
         }
 })
+    
+}, 1000);
+
 
 delite.addEventListener('mousedown', function() {
     fetch(`https://it-academy-ajax-table-14a18-default-rtdb.firebaseio.com/chat.json`, {
