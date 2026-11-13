@@ -369,8 +369,24 @@
   let current = null;
   let frame = null;
   let igBox = null;
+  let yt = null; // состояние плеера YouTube: { frame, listen, playing }
   let readyTimer = 0;
+  let timers = [];
   let lastFocus = null;
+
+  function clearTimers() {
+    clearTimeout(readyTimer);
+    timers.forEach((t) => { clearTimeout(t); clearInterval(t); });
+    timers = [];
+    yt = null;
+  }
+
+  // Команда плееру YouTube через его стандартный протокол сообщений
+  function ytSend(message) {
+    if (!yt || !yt.frame.contentWindow) return;
+    yt.frame.contentWindow.postMessage(JSON.stringify(Object.assign({ id: 1, channel: 'widget' }, message)), '*');
+  }
+  const ytCommand = (func) => ytSend({ event: 'command', func, args: [] });
 
   function layoutIg() {
     if (!frame || !igBox) return;
@@ -394,7 +410,7 @@
   function show(hit) {
     current = hit;
     const { work, group, i, list } = hit;
-    clearTimeout(readyTimer);
+    clearTimers();
     stage.textContent = '';
     frame = null;
     igBox = null;
@@ -439,7 +455,7 @@
     f.setAttribute('allowfullscreen', '');
     f.setAttribute('scrolling', 'no');
     frame = f;
-    box.append(f);
+    box.append(f, el('span', 'viewer__spin'));
     stage.append(box);
 
     if (isReel) {
@@ -454,8 +470,27 @@
       vLink.href = 'https://www.instagram.com/' + (work.kind || 'reel') + '/' + work.ig + '/';
       vLink.textContent = 'Открыть в Instagram';
     } else {
-      f.addEventListener('load', () => ready(f));
-      f.src = 'https://www.youtube-nocookie.com/embed/' + work.yt + '?autoplay=1&rel=0&playsinline=1';
+      // Ролик стартует сам и крутится по кругу. Пока не пошло воспроизведение, видна обложка и спиннер
+      const state = { frame: f, listen: 0, playing: false, talking: false };
+      yt = state;
+      f.addEventListener('load', () => {
+        // Подписываемся на события плеера; повторяем, пока он не ответит
+        let tries = 0;
+        state.listen = setInterval(() => {
+          if (yt !== state || state.talking || ++tries > 30) { clearInterval(state.listen); return; }
+          ytSend({ event: 'listening' });
+        }, 250);
+        timers.push(state.listen);
+      });
+      // Если браузер не дал запустить со звуком, запускаем без звука: так автозапуск разрешён везде
+      timers.push(setTimeout(() => {
+        if (yt === state && !state.playing) { ytCommand('mute'); ytCommand('playVideo'); }
+      }, 3500));
+      // Подстраховка: если плеер так и не сообщил о старте, всё равно показываем его
+      readyTimer = setTimeout(() => ready(f), 9000);
+      f.src = 'https://www.youtube-nocookie.com/embed/' + work.yt +
+        '?autoplay=1&loop=1&playlist=' + work.yt +
+        '&rel=0&playsinline=1&modestbranding=1&enablejsapi=1&origin=' + encodeURIComponent(location.origin);
       vLink.href = 'https://youtu.be/' + work.yt;
       vLink.textContent = 'Открыть на YouTube';
     }
@@ -482,7 +517,7 @@
 
   function shut() {
     if (viewer.hidden) return;
-    clearTimeout(readyTimer);
+    clearTimers();
     stage.textContent = ''; // убираем плеер, чтобы звук не играл дальше
     frame = null;
     igBox = null;
@@ -540,14 +575,32 @@
     if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.5) step(dx < 0 ? 1 : -1);
   });
 
-  // Плеер Instagram сам сообщает, что отрисовался
+  // Сообщения от плееров: Instagram говорит, что отрисовался; YouTube говорит о готовности и о старте видео
   window.addEventListener('message', (e) => {
-    if (!frame || !igBox || e.source !== frame.contentWindow) return;
+    if (!frame || e.source !== frame.contentWindow) return;
     let payload = e.data;
     if (typeof payload === 'string') {
       try { payload = JSON.parse(payload); } catch (err) { return; }
     }
-    if (payload && payload.type === 'MEASURE') ready(frame);
+    if (!payload) return;
+
+    if (igBox) {
+      if (payload.type === 'MEASURE') ready(frame);
+      return;
+    }
+
+    if (yt && yt.frame === frame) {
+      yt.talking = true;
+      if (payload.event === 'onReady') ytCommand('playVideo');
+      const info = payload.info;
+      const playing =
+        (payload.event === 'onStateChange' && info === 1) ||
+        (info && typeof info === 'object' && (info.playerState === 1 || info.currentTime > 0.05));
+      if (playing && !yt.playing) {
+        yt.playing = true;
+        ready(frame);
+      }
+    }
   });
 
   window.addEventListener('resize', layoutIg);

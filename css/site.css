@@ -562,6 +562,35 @@ html.is-locked .tools__track { animation-play-state: paused; }
   transition: opacity 0.3s ease;
 }
 .viewer__media.is-ready iframe { opacity: 1; }
+
+/* Ожидание: затемнение обложки и крутящееся кольцо, пока видео не началось */
+.viewer__media::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(13, 13, 13, 0.35);
+  transition: opacity 0.3s ease;
+}
+.viewer__spin {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 48px;
+  height: 48px;
+  margin: auto;
+  border: 3px solid rgba(255, 255, 255, 0.22);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.85s linear infinite;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.viewer__media.is-ready::before,
+.viewer__media.is-ready .viewer__spin { opacity: 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .viewer__spin { animation-duration: 1.6s; }
+}
 .viewer__media--yt iframe { inset: 0; width: 100%; height: 100%; }
 .viewer__go { position: absolute; inset: auto 0 22px 0; width: max-content; margin-inline: auto; }
 .viewer__img {
