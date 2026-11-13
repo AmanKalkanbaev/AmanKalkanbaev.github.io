@@ -134,16 +134,18 @@ button { font: inherit; color: inherit; }
 }
 .rail__line {
   display: block;
-  width: 14px;
+  width: 28px;
   height: 2px;
   border-radius: 2px;
   background: var(--rail);
-  transition: width 0.45s var(--ease), background-color 0.3s, box-shadow 0.3s;
+  transform: scaleX(0.5);
+  transform-origin: left center;
+  transition: transform 0.45s var(--ease), background-color 0.3s, box-shadow 0.3s;
 }
-.rail__item.is-active .rail__line { width: 20px; background: var(--ink); }
+.rail__item.is-active .rail__line { transform: scaleX(0.72); background: var(--ink); }
 .rail__item:hover .rail__line,
 .rail__item:focus-visible .rail__line {
-  width: 28px;
+  transform: none;
   background: linear-gradient(90deg, var(--glint-b), var(--glint-a));
   box-shadow: 0 0 10px 1px rgba(255, 128, 110, 0.6);
 }

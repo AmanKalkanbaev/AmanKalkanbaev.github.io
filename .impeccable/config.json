@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "gradient-text",
+        "value": "*",
+        "files": [
+          "css/site.css"
+        ],
+        "createdAt": "2026-11-13T12:07:56.206Z",
+        "reason": "user requested a light glint sweeping across his name (2026-11-13 chat); same exception as site/css/site.css, path as seen from site/"
+      }
+    ]
+  }
+}
