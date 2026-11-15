@@ -19,10 +19,10 @@ window.PORTFOLIO = {
     { id: "royal-may", ig: "DZVCQVcozYt", kind: "p", title: "Стройка: май", note: "Видеоотчёт с площадки", tag: "Royal ololo AkJol" },
     { id: "royal-february", ig: "DVgZH-AiOxh", kind: "p", title: "Стройка: февраль", note: "Видеоотчёт с площадки", tag: "Royal ololo AkJol" },
     { id: "royal-why", ig: "DGQVlmWIFla", kind: "reel", title: "Зачем покупать квартиру", note: "Преимущества Royal ololo AkJol", tag: "Royal ololo AkJol", external: true },
-    { id: "royal-november", ig: "DRzZuEkCC_e", kind: "p", title: "Стройка: ноябрь", note: "Видеоотчёт с площадки", tag: "Royal ololo AkJol" },
+    { id: "royal-september", ig: "DeGyilhIKCB", kind: "reel", title: "Стройка: сентябрь", note: "Видеоотчёт с площадки", tag: "Royal ololo AkJol" },
     { id: "overdressed-party", ig: "DSSb1JQDXlG", kind: "reel", title: "Overdressed New Year Party", note: "Анонс новогодней вечеринки", tag: "ololo" },
     { id: "ololo-bombers", ig: "DEhLm4tyA2X", kind: "reel", title: "Бомберы ololo", note: "Мерч в креативных хабах", tag: "ololo" },
-    { id: "royal-september", ig: "DeGyilhIKCB", kind: "reel", title: "Стройка: сентябрь", note: "Видеоотчёт с площадки", tag: "Royal ololo AkJol" },
+    { id: "royal-november", ig: "DRzZuEkCC_e", kind: "p", title: "Стройка: ноябрь", note: "Видеоотчёт с площадки", tag: "Royal ololo AkJol" },
     { id: "switchers", ig: "DNDj2r4M0Vg", kind: "reel", title: "Бизнес-лагерь для свитчеров", note: "Анонс лагеря на Иссык-Куле", tag: "ololo.pro" },
     { id: "ololo-team", ig: "DIOdl44tWEY", kind: "reel", title: "Ищем в команду", note: "Вакансии SMM и видеографа", tag: "ololo" },
     { id: "royal-invest", ig: "DGXcwwpooYR", kind: "reel", title: "Инвестиции в Royal ololo", note: "Про вложения в недвижимость", tag: "Royal ololo AkJol" }
