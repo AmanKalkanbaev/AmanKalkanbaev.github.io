@@ -1,21 +1,21 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Aman Kalkanbaev: портфолио</title>
-<meta name="description" content="Портфолио Амана Калканбаева: моушен-ролики, рилсы и графика.">
+<title>Aman Kalkanbaev: portfolio</title>
+<meta name="description" content="Aman Kalkanbaev's portfolio: motion videos, reels and graphic design.">
 <meta name="theme-color" content="#f1f0ee">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Aman Kalkanbaev: портфолио">
-<meta property="og:description" content="Моушен-ролики, рилсы и графика.">
+<meta property="og:title" content="Aman Kalkanbaev: portfolio">
+<meta property="og:description" content="Motion videos, reels and graphic design.">
 <meta property="og:image" content="https://amankalkanbaev.github.io/assets/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='32' fill='%23151413'/%3E%3Ctext x='32' y='44' font-family='Arial,sans-serif' font-weight='700' font-size='34' text-anchor='middle' fill='%23f6f5f3'%3EA%3C/text%3E%3C/svg%3E">
 <link rel="preload" href="assets/fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="assets/fonts/golos-cyrillic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/golos-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/site.css">
 </head>
 <body>
@@ -26,28 +26,36 @@
   <span class="blob blob--peach"></span>
 </div>
 
-<nav class="rail" id="rail" aria-label="Разделы страницы"></nav>
+<div class="lang" role="group" aria-label="Language">
+  <button type="button" data-lang="en" aria-pressed="true">EN</button>
+  <button type="button" data-lang="ru" aria-pressed="false">RU</button>
+</div>
+
+<nav class="rail" id="rail" data-i18n-aria="nav.label" aria-label="Page sections"></nav>
 
 <main>
-  <section class="hero wrap" id="top" data-nav="Начало">
+  <section class="hero wrap" id="top">
     <h1 class="hero__title">Portfolio</h1>
-    <button class="name" id="name" type="button" aria-expanded="false" aria-controls="about" aria-label="Aman Kalkanbaev, о себе">
-      <span class="name__text">Aman Kalkanbaev</span>
+    <button class="name" id="name" type="button" aria-expanded="false" aria-controls="about" data-i18n-aria="name.label" aria-label="Aman Kalkanbaev, about me">
+      <span class="name__inner">
+        <span class="name__glow" aria-hidden="true">Aman Kalkanbaev</span>
+        <span class="name__text">Aman Kalkanbaev</span>
+      </span>
     </button>
     <div class="about" id="about" inert>
       <div class="about__inner">
         <dl class="summary">
-          <div><dt>Опыт</dt><dd>больше 5 лет</dd></div>
-          <div><dt>Дизайн</dt><dd>посты, баннеры, презентации, оформление мероприятий</dd></div>
-          <div><dt>Анимация</dt><dd>моушен-ролики, анимированные рилсы</dd></div>
-          <div><dt>Видео</dt><dd>пишу сценарии, курирую съёмки, монтирую, добавляю VFX</dd></div>
+          <div><dt data-i18n="about.exp">Experience</dt><dd data-i18n="about.exp.v">5+ years</dd></div>
+          <div><dt data-i18n="about.design">Design</dt><dd data-i18n="about.design.v">posts, banners, presentations, event graphics</dd></div>
+          <div><dt data-i18n="about.anim">Animation</dt><dd data-i18n="about.anim.v">motion videos, animated reels</dd></div>
+          <div><dt data-i18n="about.video">Video</dt><dd data-i18n="about.video.v">I write scripts, supervise shoots, edit and add VFX</dd></div>
         </dl>
       </div>
     </div>
   </section>
 
   <section class="tools" aria-labelledby="tools-title">
-    <h2 class="sr-only" id="tools-title">Программы и нейросети, в которых работаю</h2>
+    <h2 class="sr-only" id="tools-title" data-i18n="tools">Software and AI tools I use</h2>
     <div class="tools__track">
       <ul class="tools__list">
         <li><img src="assets/icons/photoshop.svg" alt="" width="23" height="22">Photoshop</li>
@@ -66,58 +74,68 @@
     </div>
   </section>
 
-  <section class="section wrap" id="motion" data-nav="Моушен">
-    <div class="section__head"><h2>Моушен-ролики<span class="count"></span></h2></div>
+  <section class="section wrap" id="motion" data-nav="motion">
+    <div class="section__head"><h2><span data-i18n="motion.h">Motion videos</span><span class="count"></span></h2></div>
     <div class="grid grid--wide" data-group="motion"></div>
   </section>
 
-  <section class="section wrap" id="reels" data-nav="Рилсы">
-    <div class="section__head"><h2>Рилсы<span class="count"></span></h2></div>
+  <section class="section wrap" id="reels" data-nav="reels">
+    <div class="section__head"><h2><span data-i18n="reels.h">Reels</span><span class="count"></span></h2></div>
     <div class="grid grid--reels" data-group="reels"></div>
   </section>
 
-  <section class="section wrap" id="graphics" data-nav="Графика">
-    <div class="section__head"><h2>Графика<span class="count"></span></h2></div>
+  <section class="section wrap" id="graphics" data-nav="graphics">
+    <div class="section__head"><h2><span data-i18n="graphics.h">Graphic design</span><span class="count"></span></h2></div>
     <div class="masonry" data-group="graphics"></div>
   </section>
 
-  <section class="section wrap" id="contact" data-nav="Контакты" hidden>
-    <div class="section__head"><h2>Контакты</h2></div>
+  <section class="section wrap" id="contact" data-nav="contact" hidden>
+    <div class="section__head"><h2 data-i18n="contact.h">Contacts</h2></div>
     <ul class="contacts" id="contact-links"></ul>
   </section>
 </main>
 
 <footer class="foot wrap">
-  <span>© 2026 Aman Kalkanbaev</span>
-  <a href="#top">Наверх</a>
+  <span class="foot__sign" id="sign">© 2026 Aman Kalkanbaev</span>
+  <a href="#top" data-i18n="top">Back to top</a>
 </footer>
 
-<a class="badge" id="badge" href="#contact" aria-label="Написать в Telegram" hidden>
-  <img src="assets/avatar.webp" alt="" width="160" height="160">
-  <span class="badge__tip" aria-hidden="true">Написать</span>
-</a>
+<div class="reach" id="reach" hidden>
+  <a class="reach__label" id="reach-label" href="#contact" data-i18n-aria="contact.h" aria-label="Contacts">
+    <svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+      <path id="reach-arc" d="M 13 50 A 37 37 0 0 1 87 50" fill="none"/>
+      <path class="reach__hit" d="M 13 50 A 37 37 0 0 1 87 50"/>
+      <text><textPath href="#reach-arc" startOffset="50%" text-anchor="middle" data-i18n="contact.arc">CONTACTS</textPath></text>
+    </svg>
+  </a>
+  <a class="badge" id="badge" href="#contact" data-i18n-aria="badge.label" aria-label="Message me on Telegram">
+    <img src="assets/avatar.webp" alt="" width="160" height="160">
+    <span class="badge__tip" aria-hidden="true" data-i18n="badge.tip">Message me</span>
+  </a>
+</div>
 
 <div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-labelledby="viewer-title" hidden>
-  <button class="round viewer__close" id="viewer-close" type="button" aria-label="Закрыть">
+  <button class="round viewer__close" id="viewer-close" type="button" data-i18n-aria="close" aria-label="Close">
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9"/></svg>
   </button>
   <div class="viewer__stage" id="viewer-stage"></div>
   <div class="viewer__bar">
-    <button class="round" id="viewer-prev" type="button" aria-label="Предыдущая работа">
+    <button class="round" id="viewer-prev" type="button" data-i18n-aria="prev" aria-label="Previous work">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 8H3M7 4L3 8l4 4"/></svg>
     </button>
     <div class="viewer__text">
       <strong id="viewer-title"></strong>
       <span id="viewer-note"></span>
+      <span class="viewer__tags" id="viewer-tags"></span>
       <a id="viewer-link" href="./" target="_blank" rel="noopener"></a>
     </div>
-    <button class="round" id="viewer-next" type="button" aria-label="Следующая работа">
+    <button class="round" id="viewer-next" type="button" data-i18n-aria="next" aria-label="Next work">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
     </button>
   </div>
 </div>
 
-<noscript><p class="wrap">Работы показываются при включённом JavaScript.</p></noscript>
+<noscript><p class="wrap">Please enable JavaScript to see the works.</p></noscript>
 
 <script src="js/works.js"></script>
 <script src="js/site.js"></script>

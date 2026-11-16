@@ -19,14 +19,142 @@
     return node;
   }
   const isLocked = () => root.classList.contains('is-locked');
+  const scrollTo = (node) => node.scrollIntoView({ behavior: calm.matches ? 'auto' : 'smooth', block: 'start' });
+
+  /* ---------- Языки ---------- */
+  // Английский по умолчанию. Выбор посетителя запоминается; ссылка вида сайт/?lang=ru сразу открывает русский.
+
+  const LANGS = ['en', 'ru'];
+  const I18N = {
+    en: {
+      'meta.title': 'Aman Kalkanbaev: portfolio',
+      'meta.desc': "Aman Kalkanbaev's portfolio: motion videos, reels and graphic design.",
+      'nav.label': 'Page sections',
+      'nav.motion': 'Motion',
+      'nav.reels': 'Reels',
+      'nav.graphics': 'Graphics',
+      'nav.contact': 'Contacts',
+      'name.label': 'Aman Kalkanbaev, about me',
+      'about.exp': 'Experience',
+      'about.exp.v': '5+ years',
+      'about.design': 'Design',
+      'about.design.v': 'posts, banners, presentations, event graphics',
+      'about.anim': 'Animation',
+      'about.anim.v': 'motion videos, animated reels',
+      'about.video': 'Video',
+      'about.video.v': 'writing scripts, supervising shoots, editing, VFX',
+      'tools': 'Software and AI tools I use',
+      'motion.h': 'Motion videos',
+      'reels.h': 'Reels',
+      'graphics.h': 'Graphic design',
+      'contact.h': 'Contacts',
+      'contact.arc': 'CONTACTS',
+      'contact.email': 'Email',
+      'top': 'Back to top',
+      'badge.label': 'Message me on Telegram',
+      'badge.tip': 'Message me',
+      'close': 'Close',
+      'prev': 'Previous work',
+      'next': 'Next work',
+      'of': 'of',
+      'link.ig': 'Open on Instagram',
+      'link.yt': 'Open on YouTube'
+    },
+    ru: {
+      'meta.title': 'Aman Kalkanbaev: портфолио',
+      'meta.desc': 'Портфолио Амана Калканбаева: моушен-ролики, рилсы и графика.',
+      'nav.label': 'Разделы страницы',
+      'nav.motion': 'Моушен',
+      'nav.reels': 'Рилсы',
+      'nav.graphics': 'Графика',
+      'nav.contact': 'Контакты',
+      'name.label': 'Aman Kalkanbaev, о себе',
+      'about.exp': 'Опыт',
+      'about.exp.v': 'больше 5 лет',
+      'about.design': 'Дизайн',
+      'about.design.v': 'посты, баннеры, презентации, оформление мероприятий',
+      'about.anim': 'Анимация',
+      'about.anim.v': 'моушен-ролики, анимированные рилсы',
+      'about.video': 'Видео',
+      'about.video.v': 'пишу сценарии, курирую съёмки, монтирую, добавляю VFX',
+      'tools': 'Программы и нейросети, в которых работаю',
+      'motion.h': 'Моушен-ролики',
+      'reels.h': 'Рилсы',
+      'graphics.h': 'Графика',
+      'contact.h': 'Контакты',
+      'contact.arc': 'КОНТАКТЫ',
+      'contact.email': 'Почта',
+      'top': 'Наверх',
+      'badge.label': 'Написать в Telegram',
+      'badge.tip': 'Написать',
+      'close': 'Закрыть',
+      'prev': 'Предыдущая работа',
+      'next': 'Следующая работа',
+      'of': 'из',
+      'link.ig': 'Открыть в Instagram',
+      'link.yt': 'Открыть на YouTube'
+    }
+  };
+
+  let lang = (() => {
+    const asked = new URLSearchParams(location.search).get('lang');
+    if (LANGS.includes(asked)) return asked;
+    try {
+      const saved = localStorage.getItem('lang');
+      if (LANGS.includes(saved)) return saved;
+    } catch (e) { /* хранилище недоступно: просто английский */ }
+    return 'en';
+  })();
+
+  const ui = (key) => I18N[lang][key] ?? I18N.en[key] ?? key;
+  // Текст работы: строка или { en, ru }
+  const tr = (v) => (v == null ? '' : typeof v === 'string' ? v : v[lang] || v.en || v.ru || '');
+  const trList = (v) => {
+    const list = v == null ? [] : Array.isArray(v) ? v : v[lang] || v.en || v.ru || [];
+    return (Array.isArray(list) ? list : String(list).split(',')).map((s) => String(s).trim()).filter(Boolean);
+  };
+
+  function applyStatic() {
+    root.lang = lang;
+    document.title = ui('meta.title');
+    const desc = $('meta[name="description"]');
+    if (desc) desc.content = ui('meta.desc');
+    $$('[data-i18n]').forEach((n) => { n.textContent = ui(n.dataset.i18n); });
+    $$('[data-i18n-aria]').forEach((n) => n.setAttribute('aria-label', ui(n.dataset.i18nAria)));
+    $$('.lang [data-lang]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+  }
+
+  function setLang(next) {
+    if (!LANGS.includes(next) || next === lang) return;
+    lang = next;
+    try { localStorage.setItem('lang', lang); } catch (e) { /* не критично */ }
+    try {
+      const url = new URL(location.href);
+      if (url.searchParams.has('lang')) {
+        url.searchParams.set('lang', lang);
+        history.replaceState(history.state, '', url);
+      }
+    } catch (e) { /* не критично */ }
+    applyStatic();
+    renderWorks();
+    if (current) fillText(index.get(current.work.id) || current);
+  }
+
+  $$('.lang [data-lang]').forEach((b) => b.addEventListener('click', () => setLang(b.dataset.lang)));
 
   /* ---------- Карточки работ ---------- */
 
   const index = new Map(); // id работы -> { work, group, i, list }
 
+  function coverOf(work, group) {
+    if (work.cover) return work.cover;
+    if (group === 'motion') return 'assets/video/' + (work.yt || work.id) + '.webp';
+    return 'assets/reels/' + (work.ig || work.id) + '.webp';
+  }
+
   function preview(work, group) {
-    if (group === 'motion') return { src: 'assets/video/' + work.yt + '.webp', w: 1280, h: 720, ratio: 16 / 9 };
-    if (group === 'reels') return { src: 'assets/reels/' + work.ig + '.webp', w: 540, h: 960, ratio: 9 / 16 };
+    if (group === 'motion') return { src: coverOf(work, group), w: 1280, h: 720, ratio: 16 / 9 };
+    if (group === 'reels') return { src: coverOf(work, group), w: 540, h: 960, ratio: 9 / 16 };
     const real = work.w / work.h;
     const ratio = Math.min(2.6, Math.max(0.62, real)); // очень длинные и очень высокие макеты в плитке подрезаем
     return { src: 'assets/graphics/' + work.file + '-sm.webp', w: work.w, h: work.h, ratio, cropped: ratio !== real };
@@ -54,8 +182,9 @@
       media.append(mark);
     }
 
-    a.append(media, el('span', 'card__title', work.title));
-    if (work.note) a.append(el('span', 'card__note', work.note));
+    a.append(media, el('span', 'card__title', tr(work.title)));
+    const note = tr(work.note);
+    if (note) a.append(el('span', 'card__note', note));
     a.addEventListener('click', (e) => {
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
       e.preventDefault();
@@ -64,23 +193,27 @@
     return a;
   }
 
-  GROUPS.forEach((group) => {
-    const host = $('[data-group="' + group + '"]');
-    if (!host) return;
-    const section = host.closest('section');
-    const list = (Array.isArray(data[group]) ? data[group] : []).filter((w) => w && w.id);
-    if (!list.length) { section.hidden = true; return; }
-    const count = $('.count', section);
-    if (count) count.textContent = String(list.length);
-    list.forEach((work, i) => {
-      index.set(work.id, { work, group, i, list });
-      host.append(card(work, group));
+  function renderWorks() {
+    index.clear();
+    GROUPS.forEach((group) => {
+      const host = $('[data-group="' + group + '"]');
+      if (!host) return;
+      const section = host.closest('section');
+      const list = (Array.isArray(data[group]) ? data[group] : []).filter((w) => w && w.id);
+      host.textContent = '';
+      section.hidden = !list.length;
+      const count = $('.count', section);
+      if (count) count.textContent = list.length ? String(list.length) : '';
+      list.forEach((work, i) => {
+        index.set(work.id, { work, group, i, list });
+        host.append(card(work, group));
+      });
     });
-  });
+  }
 
   /* ---------- Контакты ---------- */
 
-  (function contacts() {
+  function contacts() {
     const c = data.contacts || {};
     const rows = [];
     const trim = (v) => String(v || '').trim();
@@ -98,7 +231,7 @@
       rows.push({ label: 'Instagram', value: '@' + name, href: 'https://www.instagram.com/' + name + '/' });
     }
     if (trim(c.email)) {
-      rows.push({ label: 'Почта', value: trim(c.email), href: 'mailto:' + trim(c.email) });
+      rows.push({ key: 'contact.email', value: trim(c.email), href: 'mailto:' + trim(c.email) });
     }
     if (!rows.length) return;
 
@@ -108,52 +241,74 @@
       const a = el('a');
       a.href = row.href;
       if (!row.href.startsWith('mailto:')) { a.target = '_blank'; a.rel = 'noopener'; }
+      const label = el('span', 'contacts__label', row.label || '');
+      if (row.key) label.dataset.i18n = row.key;
       const arrow = el('span', 'contacts__arrow');
       arrow.innerHTML = ICON_ARROW;
-      a.append(el('span', 'contacts__label', row.label), el('span', 'contacts__value', row.value), arrow);
+      a.append(label, el('span', 'contacts__value', row.value), arrow);
       li.append(a);
       host.append(li);
     });
     $('#contact').hidden = false;
 
+    // Аватарка ведёт в Telegram, надпись по кругу над ней листает к контактам
     const badge = $('#badge');
     const tg = rows.find((r) => r.label === 'Telegram') || rows[0];
     badge.href = tg.href;
     if (!tg.href.startsWith('mailto:')) { badge.target = '_blank'; badge.rel = 'noopener'; }
-    badge.setAttribute('aria-label', tg.label === 'Telegram' ? 'Написать в Telegram' : 'Написать');
-    badge.hidden = false;
-  })();
+    if (tg.label !== 'Telegram') badge.removeAttribute('data-i18n-aria');
+    $('#reach-label').addEventListener('click', (e) => {
+      e.preventDefault();
+      scrollTo($('#contact'));
+    });
+    $('#reach').hidden = false;
+  }
 
   /* ---------- Навигация слева ---------- */
   // Линии строятся сами из разделов с атрибутом data-nav: новый раздел появится в навигации без правок здесь.
+  // Подсвечен раздел, верх которого прошёл 40% высоты экрана; в самом низу страницы всегда последний.
 
-  (function rail() {
+  function rail() {
     const nav = $('#rail');
     if (!nav) return;
     const sections = $$('main > section[data-nav]').filter((s) => !s.hidden && s.id);
     const items = sections.map((section) => {
+      const key = 'nav.' + section.dataset.nav;
       const a = el('a', 'rail__item');
       a.href = '#' + section.id;
-      a.setAttribute('aria-label', section.dataset.nav);
-      a.append(el('span', 'rail__line'), el('span', 'rail__tip', section.dataset.nav));
+      a.dataset.i18nAria = key;
+      const tip = el('span', 'rail__tip');
+      tip.dataset.i18n = key;
+      a.append(el('span', 'rail__line'), tip);
       a.addEventListener('click', (e) => {
         e.preventDefault();
-        section.scrollIntoView({ behavior: calm.matches ? 'auto' : 'smooth', block: 'start' });
-        try { history.replaceState(history.state, '', section.id === 'top' ? location.pathname + location.search : '#' + section.id); } catch (err) { /* не критично */ }
+        scrollTo(section);
       });
       nav.append(a);
       return a;
     });
 
-    if (!('IntersectionObserver' in window)) return;
-    const visible = new Map();
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => visible.set(entry.target, entry.isIntersecting));
-      const current = sections.find((s) => visible.get(s));
-      items.forEach((a, i) => a.classList.toggle('is-active', sections[i] === current));
-    }, { rootMargin: '-40% 0px -55% 0px' });
-    sections.forEach((s) => io.observe(s));
-  })();
+    let ticking = false;
+    function pick() {
+      ticking = false;
+      let active = null;
+      if (window.scrollY + window.innerHeight >= root.scrollHeight - 4) {
+        active = sections[sections.length - 1];
+      } else {
+        const line = window.innerHeight * 0.4;
+        sections.forEach((s) => { if (s.getBoundingClientRect().top <= line) active = s; });
+      }
+      items.forEach((a, i) => a.classList.toggle('is-active', sections[i] === active));
+    }
+    const schedule = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(pick);
+    };
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    pick();
+  }
 
   /* ---------- Имя: блик и раскрытие сводки ---------- */
 
@@ -355,146 +510,106 @@
   const stage = $('#viewer-stage');
   const vTitle = $('#viewer-title');
   const vNote = $('#viewer-note');
+  const vTags = $('#viewer-tags');
   const vLink = $('#viewer-link');
   const vClose = $('#viewer-close');
   const vPrev = $('#viewer-prev');
   const vNext = $('#viewer-next');
 
-  // Геометрия встроенного плеера Instagram (проверено в ноябре 2026).
-  // Если Instagram поменяет вёрстку плеера, рамка рилса правится здесь.
-  const IG_HEADER = 54;      // высота шапки плеера, px
-  const IG_BOX = 1.25;       // медиа-блок плеера не выше 4:5
-  const IG_OVERSCAN = 1.012; // запас, чтобы по краям не было полосок
+  // Телефонам и экономному режиму отдаём лёгкую версию 720p
+  const liteQuery = window.matchMedia('(max-width: 760px), (max-height: 500px)');
+  function wantsLite() {
+    const net = navigator.connection;
+    return liteQuery.matches || !!(net && (net.saveData || /(^|-)2g|3g/.test(net.effectiveType || '')));
+  }
+  const mediaSrc = (work) => 'assets/media/' + (work.video || work.id) + (wantsLite() ? '-720' : '') + '.mp4';
 
   let current = null;
-  let frame = null;
-  let igBox = null;
-  let yt = null; // состояние плеера YouTube: { frame, listen, playing }
-  let readyTimer = 0;
-  let timers = [];
+  let video = null;
   let lastFocus = null;
 
-  function clearTimers() {
-    clearTimeout(readyTimer);
-    timers.forEach((t) => { clearTimeout(t); clearInterval(t); });
-    timers = [];
-    yt = null;
+  function stopVideo() {
+    if (!video) return;
+    video.pause();
+    video.removeAttribute('src'); // обрываем загрузку, чтобы не тратить трафик
+    video.load();
+    video = null;
   }
 
-  // Команда плееру YouTube через его стандартный протокол сообщений
-  function ytSend(message) {
-    if (!yt || !yt.frame.contentWindow) return;
-    yt.frame.contentWindow.postMessage(JSON.stringify(Object.assign({ id: 1, channel: 'widget' }, message)), '*');
-  }
-  const ytCommand = (func) => ytSend({ event: 'command', func, args: [] });
+  function fillText(hit) {
+    const { work, group, i, list } = hit;
+    vTitle.textContent = tr(work.title);
+    vNote.textContent = [(i + 1) + ' ' + ui('of') + ' ' + list.length, tr(work.note)].filter(Boolean).join(' · ');
+    vTags.textContent = '';
+    const tags = trList(work.tags);
+    tags.forEach((tag) => vTags.append(el('span', 'tag', tag)));
+    vTags.hidden = !tags.length;
+    vPrev.disabled = vNext.disabled = list.length < 2;
 
-  function layoutIg() {
-    if (!frame || !igBox) return;
-    const W = igBox.clientWidth;
-    if (!W) return;
-    const a = 9 / 16;
-    const H = W / a;
-    const iw = (IG_OVERSCAN * W) / (IG_BOX * a);
-    const vh = IG_BOX * iw;
-    frame.style.width = iw + 'px';
-    frame.style.height = Math.ceil(IG_HEADER + vh + 420) + 'px';
-    frame.style.left = (W - iw) / 2 + 'px';
-    frame.style.top = -(IG_HEADER + (vh - H) / 2) + 'px';
-  }
-
-  function ready(target) {
-    clearTimeout(readyTimer);
-    if (target && target === frame && target.parentElement) target.parentElement.classList.add('is-ready');
+    if (group !== 'graphics' && work.ig) {
+      vLink.href = 'https://www.instagram.com/' + (work.kind || 'reel') + '/' + work.ig + '/';
+      vLink.textContent = ui('link.ig');
+      vLink.hidden = false;
+    } else if (group !== 'graphics' && work.yt) {
+      vLink.href = 'https://youtu.be/' + work.yt;
+      vLink.textContent = ui('link.yt');
+      vLink.hidden = false;
+    } else {
+      vLink.hidden = true;
+    }
+    const img = $('.viewer__img', stage);
+    if (img) img.alt = [tr(work.title), tr(work.note)].filter(Boolean).join('. ');
   }
 
   function show(hit) {
     current = hit;
-    const { work, group, i, list } = hit;
-    clearTimers();
+    const { work, group } = hit;
+    stopVideo();
     stage.textContent = '';
-    frame = null;
-    igBox = null;
-
-    vTitle.textContent = work.title;
-    vNote.textContent = [(i + 1) + ' из ' + list.length, work.note].filter(Boolean).join(' · ');
-    vPrev.disabled = vNext.disabled = list.length < 2;
 
     if (group === 'graphics') {
       const img = el('img', 'viewer__img');
-      img.alt = work.title + (work.note ? '. ' + work.note : '');
       img.width = work.w;
       img.height = work.h;
       img.src = 'assets/graphics/' + work.file + '.webp';
       stage.append(img);
-      vLink.hidden = true;
+      fillText(hit);
       return;
     }
+    fillText(hit);
 
-    const isReel = group === 'reels';
-    const box = el('div', 'viewer__media viewer__media--' + (isReel ? 'ig' : 'yt'));
-    box.style.backgroundImage = 'url("' + preview(work, group).src + '")';
-
-    if (isReel && work.external) {
-      // Instagram не разрешает играть этот рилс на других сайтах: показываем обложку и кнопку
-      const go = el('a', 'btn viewer__go', 'Смотреть в Instagram');
-      go.href = 'https://www.instagram.com/' + (work.kind || 'reel') + '/' + work.ig + '/';
-      go.target = '_blank';
-      go.rel = 'noopener';
-      const knob = el('span', 'btn__knob');
-      knob.innerHTML = ICON_ARROW;
-      go.append(knob);
-      box.append(go);
-      stage.append(box);
-      vLink.hidden = true;
-      return;
-    }
-
-    const f = document.createElement('iframe');
-    f.title = work.title;
-    f.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write; web-share');
-    f.setAttribute('allowfullscreen', '');
-    f.setAttribute('scrolling', 'no');
-    frame = f;
-    box.append(f, el('span', 'viewer__spin'));
+    // Своё видео: стартует сразу, крутится по кругу без перезапуска плеера
+    const box = el('div', 'viewer__media is-loading viewer__media--' + (group === 'reels' ? 'tall' : 'wide'));
+    const cover = coverOf(work, group);
+    box.style.backgroundImage = 'url("' + cover + '")';
+    const v = document.createElement('video');
+    v.poster = cover;
+    v.loop = true;
+    v.controls = true;
+    v.playsInline = true;
+    v.preload = 'auto';
+    v.setAttribute('playsinline', '');
+    v.setAttribute('controlslist', 'nodownload');
+    v.setAttribute('aria-label', tr(work.title));
+    const loaded = () => box.classList.remove('is-loading');
+    v.addEventListener('playing', loaded);
+    v.addEventListener('pause', loaded);
+    v.addEventListener('error', loaded);
+    v.addEventListener('waiting', () => { if (!v.paused) box.classList.add('is-loading'); });
+    v.src = mediaSrc(work);
+    box.append(v, el('span', 'viewer__spin'));
     stage.append(box);
+    video = v;
 
-    if (isReel) {
-      igBox = box;
-      layoutIg();
-      // Плеер Instagram показываем, когда он сообщил свой размер; если не сообщил, то чуть позже загрузки
-      f.addEventListener('load', () => {
-        clearTimeout(readyTimer);
-        readyTimer = setTimeout(() => ready(f), 900);
+    // Со звуком, если браузер разрешает; иначе без звука (звук включается в плеере)
+    const attempt = v.play();
+    if (attempt && attempt.catch) {
+      attempt.catch(() => {
+        if (video !== v) return;
+        v.muted = true;
+        v.play().catch(() => { if (video === v) loaded(); });
       });
-      f.src = 'https://www.instagram.com/' + (work.kind || 'reel') + '/' + work.ig + '/embed/';
-      vLink.href = 'https://www.instagram.com/' + (work.kind || 'reel') + '/' + work.ig + '/';
-      vLink.textContent = 'Открыть в Instagram';
-    } else {
-      // Ролик стартует сам и крутится по кругу. Пока не пошло воспроизведение, видна обложка и спиннер
-      const state = { frame: f, listen: 0, playing: false, talking: false };
-      yt = state;
-      f.addEventListener('load', () => {
-        // Подписываемся на события плеера; повторяем, пока он не ответит
-        let tries = 0;
-        state.listen = setInterval(() => {
-          if (yt !== state || state.talking || ++tries > 30) { clearInterval(state.listen); return; }
-          ytSend({ event: 'listening' });
-        }, 250);
-        timers.push(state.listen);
-      });
-      // Если браузер не дал запустить со звуком, запускаем без звука: так автозапуск разрешён везде
-      timers.push(setTimeout(() => {
-        if (yt === state && !state.playing) { ytCommand('mute'); ytCommand('playVideo'); }
-      }, 3500));
-      // Подстраховка: если плеер так и не сообщил о старте, всё равно показываем его
-      readyTimer = setTimeout(() => ready(f), 9000);
-      f.src = 'https://www.youtube-nocookie.com/embed/' + work.yt +
-        '?autoplay=1&loop=1&playlist=' + work.yt +
-        '&rel=0&playsinline=1&modestbranding=1&enablejsapi=1&origin=' + encodeURIComponent(location.origin);
-      vLink.href = 'https://youtu.be/' + work.yt;
-      vLink.textContent = 'Открыть на YouTube';
     }
-    vLink.hidden = false;
   }
 
   function open(id, push) {
@@ -517,10 +632,8 @@
 
   function shut() {
     if (viewer.hidden) return;
-    clearTimers();
-    stage.textContent = ''; // убираем плеер, чтобы звук не играл дальше
-    frame = null;
-    igBox = null;
+    stopVideo();
+    stage.textContent = '';
     current = null;
     viewer.classList.remove('is-open');
     viewer.hidden = true;
@@ -551,10 +664,11 @@
   document.addEventListener('keydown', (e) => {
     if (viewer.hidden) return;
     if (e.key === 'Escape') { e.preventDefault(); close(); return; }
-    if (e.key === 'ArrowLeft') step(-1);
-    if (e.key === 'ArrowRight') step(1);
+    const inVideo = e.target && e.target.tagName === 'VIDEO'; // там стрелки перематывают ролик
+    if (e.key === 'ArrowLeft' && !inVideo) step(-1);
+    if (e.key === 'ArrowRight' && !inVideo) step(1);
     if (e.key === 'Tab') {
-      const focusable = $$('button:not([disabled]), a[href], iframe', viewer).filter((n) => !n.hidden && n.offsetParent !== null);
+      const focusable = $$('button:not([disabled]), a[href], video', viewer).filter((n) => !n.hidden && n.offsetParent !== null);
       if (!focusable.length) return;
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
@@ -575,36 +689,6 @@
     if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.5) step(dx < 0 ? 1 : -1);
   });
 
-  // Сообщения от плееров: Instagram говорит, что отрисовался; YouTube говорит о готовности и о старте видео
-  window.addEventListener('message', (e) => {
-    if (!frame || e.source !== frame.contentWindow) return;
-    let payload = e.data;
-    if (typeof payload === 'string') {
-      try { payload = JSON.parse(payload); } catch (err) { return; }
-    }
-    if (!payload) return;
-
-    if (igBox) {
-      if (payload.type === 'MEASURE') ready(frame);
-      return;
-    }
-
-    if (yt && yt.frame === frame) {
-      yt.talking = true;
-      if (payload.event === 'onReady') ytCommand('playVideo');
-      const info = payload.info;
-      const playing =
-        (payload.event === 'onStateChange' && info === 1) ||
-        (info && typeof info === 'object' && (info.playerState === 1 || info.currentTime > 0.05));
-      if (playing && !yt.playing) {
-        yt.playing = true;
-        ready(frame);
-      }
-    }
-  });
-
-  window.addEventListener('resize', layoutIg);
-
   window.addEventListener('popstate', () => {
     const id = decodeURIComponent(location.hash.slice(1));
     if (history.state && history.state.viewer && index.has(id)) open(id, false);
@@ -614,6 +698,13 @@
     const id = decodeURIComponent(location.hash.slice(1));
     if (index.has(id) && (!current || current.work.id !== id)) open(id, false);
   });
+
+  /* ---------- Запуск ---------- */
+
+  renderWorks();
+  contacts();
+  rail();
+  applyStatic();
 
   // Ссылка вида сайт/#id-работы сразу открывает эту работу
   const wanted = decodeURIComponent(location.hash.slice(1));
