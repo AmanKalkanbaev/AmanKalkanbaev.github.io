@@ -1,7 +1,9 @@
 (() => {
   'use strict';
 
-  const data = window.PORTFOLIO || {};
+  const base = window.PORTFOLIO || {};
+  const content = window.SiteContent || null; // правки из админки (js/content.js)
+  let data = base;
   const GROUPS = ['motion', 'reels', 'graphics'];
   const root = document.documentElement;
   const calm = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -699,14 +701,58 @@
     if (index.has(id) && (!current || current.work.id !== id)) open(id, false);
   });
 
+  /* ---------- Вход в админку: двойной клик по подписи внизу ---------- */
+
+  (function secret() {
+    const sign = $('#sign');
+    if (!sign) return;
+    let last = 0;
+    sign.addEventListener('click', () => {
+      const now = Date.now();
+      if (now - last < 450) location.href = 'admin/';
+      last = now;
+    });
+  })();
+
   /* ---------- Запуск ---------- */
 
-  renderWorks();
   contacts();
-  rail();
   applyStatic();
 
-  // Ссылка вида сайт/#id-работы сразу открывает эту работу
-  const wanted = decodeURIComponent(location.hash.slice(1));
-  if (index.has(wanted)) open(wanted, false);
+  let started = false;
+  function start() {
+    if (started) return;
+    started = true;
+    renderWorks();
+    rail();
+    applyStatic();
+    // Ссылка вида сайт/#id-работы сразу открывает эту работу
+    const wanted = decodeURIComponent(location.hash.slice(1));
+    if (index.has(wanted)) open(wanted, false);
+  }
+
+  // Правки из админки: прошлые берём из памяти браузера и показываем сразу,
+  // свежие догружаем. Кто зашёл впервые, ждёт их не дольше 1,2 секунды.
+  if (!content) {
+    start();
+  } else {
+    const saved = content.cached();
+    if (saved) {
+      data = content.apply(base, saved);
+      start();
+    } else {
+      setTimeout(start, 1200);
+    }
+    content.load().then((fresh) => {
+      content.remember(fresh);
+      if (JSON.stringify(fresh) === JSON.stringify(saved)) { start(); return; }
+      data = content.apply(base, fresh);
+      if (!started) { start(); return; }
+      renderWorks();
+      if (current) {
+        const hit = index.get(current.work.id);
+        if (hit) { current = hit; fillText(hit); }
+      }
+    }).catch(() => start());
+  }
 })();

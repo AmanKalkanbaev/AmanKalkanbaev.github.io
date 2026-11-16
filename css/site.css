@@ -491,6 +491,7 @@ html.is-locked .tools__track { animation-play-state: paused; }
   color: var(--muted);
   font-size: 13px;
 }
+.foot__sign { -webkit-user-select: none; user-select: none; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .foot a { text-decoration: none; text-underline-offset: 4px; }
 .foot a:hover { color: var(--ink); text-decoration: underline; }
 

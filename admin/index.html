@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Админка портфолио</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='32' fill='%23151413'/%3E%3Ctext x='32' y='44' font-family='Arial,sans-serif' font-weight='700' font-size='34' text-anchor='middle' fill='%23f6f5f3'%3EA%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<main class="gate" id="gate">
+  <p class="gate__wait" id="gate-wait">Загрузка…</p>
+  <form class="login" id="login" hidden novalidate>
+    <h1>Вход</h1>
+    <label>Почта
+      <input type="email" id="login-email" autocomplete="username" required>
+    </label>
+    <label>Пароль
+      <input type="password" id="login-pass" autocomplete="current-password" required>
+    </label>
+    <button class="btn btn--main" type="submit" id="login-go">Войти</button>
+    <button class="link" type="button" id="login-reset">Забыли пароль?</button>
+    <p class="msg" id="login-msg" role="alert"></p>
+  </form>
+</main>
+
+<div class="app" id="app" hidden>
+  <header class="top">
+    <strong class="top__title">Портфолио: админка</strong>
+    <span class="top__status" id="status" role="status"></span>
+    <div class="top__actions">
+      <a class="btn" href="../" target="_blank" rel="noopener">Открыть сайт</a>
+      <button class="btn" type="button" id="logout">Выйти</button>
+      <button class="btn btn--main" type="button" id="save">Сохранить</button>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs" aria-label="Разделы"></nav>
+
+  <p class="hint">Правки появляются на сайте сразу после «Сохранить», загружать сайт заново на GitHub не нужно.
+    Теги пишите через запятую. Пустая русская строка = на русском покажется английский текст.</p>
+
+  <section class="list" id="list"></section>
+</div>
+
+<script src="../js/works.js"></script>
+<script src="../js/content.js"></script>
+<script type="module" src="admin.js"></script>
+</body>
+</html>
