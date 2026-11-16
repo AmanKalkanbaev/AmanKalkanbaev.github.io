@@ -7,6 +7,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
 
 const OWNER = 'I2bJwD0kvgO5xAUuiXYaSHiI6BE2'; // User UID владельца в Firebase
+const OWNER_EMAIL = 'kalkanbaev5@gmail.com'; // вход только по паролю, почта всегда эта
 const SC = window.SiteContent;
 const BASE = window.PORTFOLIO || {};
 const GROUP_NAMES = { motion: 'Моушен', reels: 'Рилсы', graphics: 'Графика' };
@@ -88,7 +89,8 @@ const isDirty = () => ready && JSON.stringify(build()) !== savedJSON;
 const gate = $('#gate');
 const gateWait = $('#gate-wait');
 const login = $('#login');
-const loginEmail = $('#login-email');
+const loginEmail = $('#login-email'); // скрытое поле: чтобы менеджер паролей узнал аккаунт
+loginEmail.value = OWNER_EMAIL;
 const loginPass = $('#login-pass');
 const loginGo = $('#login-go');
 const loginMsg = $('#login-msg');
@@ -101,12 +103,12 @@ function showLogin(message) {
   login.hidden = false;
   loginMsg.textContent = message || '';
   loginMsg.classList.remove('msg--ok');
-  (loginEmail.value ? loginPass : loginEmail).focus();
+  loginPass.focus();
 }
 
 function authError(err) {
   const code = (err && err.code) || '';
-  if (/invalid-credential|wrong-password|user-not-found|invalid-email|missing-password/.test(code)) return 'Неверная почта или пароль.';
+  if (/invalid-credential|wrong-password|user-not-found|invalid-email|missing-password/.test(code)) return 'Неверный пароль.';
   if (code.includes('too-many-requests')) return 'Слишком много попыток. Подождите несколько минут.';
   if (code.includes('network-request-failed')) return 'Нет связи с интернетом.';
   if (code.includes('operation-not-allowed')) return 'Вход по почте выключен в Firebase: Authentication → Sign-in method → Email/Password.';
@@ -118,10 +120,10 @@ login.addEventListener('submit', async (e) => {
   e.preventDefault();
   loginMsg.textContent = '';
   loginMsg.classList.remove('msg--ok');
-  if (!loginEmail.value.trim() || !loginPass.value) { loginMsg.textContent = 'Впишите почту и пароль.'; return; }
+  if (!loginPass.value) { loginMsg.textContent = 'Впишите пароль.'; return; }
   loginGo.disabled = true;
   try {
-    await signInWithEmailAndPassword(auth, loginEmail.value.trim(), loginPass.value);
+    await signInWithEmailAndPassword(auth, OWNER_EMAIL, loginPass.value);
     loginPass.value = '';
   } catch (err) {
     loginMsg.textContent = authError(err);
@@ -132,11 +134,9 @@ login.addEventListener('submit', async (e) => {
 
 $('#login-reset').addEventListener('click', async () => {
   loginMsg.classList.remove('msg--ok');
-  const email = loginEmail.value.trim();
-  if (!email) { loginMsg.textContent = 'Впишите почту выше: на неё придёт ссылка для нового пароля.'; loginEmail.focus(); return; }
   try {
-    await sendPasswordResetEmail(auth, email);
-    loginMsg.textContent = 'Письмо отправлено. Проверьте почту, иногда оно попадает в спам.';
+    await sendPasswordResetEmail(auth, OWNER_EMAIL);
+    loginMsg.textContent = 'Ссылка для нового пароля ушла на ' + OWNER_EMAIL + '. Если письма нет, проверьте спам.';
     loginMsg.classList.add('msg--ok');
   } catch (err) {
     loginMsg.textContent = authError(err);

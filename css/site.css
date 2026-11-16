@@ -275,7 +275,7 @@ button { font: inherit; color: inherit; }
 .name:focus-visible .name__inner { transform: scale(1.05); }
 
 @media (prefers-reduced-motion: no-preference) {
-  .name__text { animation: shine 9s cubic-bezier(0.45, 0, 0.35, 1) 1.6s infinite; }
+  .name__text { animation: shine 6s cubic-bezier(0.45, 0, 0.35, 1) 1.6s infinite; }
   .hero__title { animation: rise 1.1s var(--ease) both; }
   .name { animation: rise 1.1s var(--ease) 0.12s both; }
 }
@@ -385,7 +385,8 @@ html.is-locked .tools__track { animation-play-state: paused; }
 
 .grid { display: grid; gap: clamp(18px, 2.2vw, 28px) var(--gap); }
 .grid--wide { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.grid--reels { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+/* 4 рилса в строке, но шириной как при 5: лишнее место уходит в промежутки */
+.grid--reels { grid-template-columns: repeat(4, calc((100% - 4 * var(--gap)) / 5)); justify-content: space-between; }
 .masonry { columns: 3; column-gap: var(--gap); }
 .masonry .card { break-inside: avoid; margin-bottom: clamp(18px, 2.2vw, 28px); }
 
