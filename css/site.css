@@ -248,6 +248,21 @@ button { font: inherit; color: inherit; }
     0 0 0 rgba(0, 160, 255, 0.9);
   transition: opacity 0.35s ease, text-shadow 0.8s var(--ease);
 }
+/* Цветная подложка под ореолом. На компьютере за именем и так цветное сияние фона, а на планшетах
+   и узких экранах фон там почти белый, и белый ореол на нём терялся: оставались одни цветные края */
+.name__inner::before {
+  content: "";
+  position: absolute;
+  inset: -24px -30px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(240, 140, 205, 0.75), rgba(196, 160, 255, 0.45) 60%, transparent);
+  filter: blur(10px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+.name:hover .name__inner::before,
+.name:focus-visible .name__inner::before { opacity: 1; }
 .name:hover .name__glow,
 .name:focus-visible .name__glow {
   opacity: 1;
@@ -275,13 +290,13 @@ button { font: inherit; color: inherit; }
 .name:focus-visible .name__inner { transform: scale(1.05); }
 
 @media (prefers-reduced-motion: no-preference) {
-  .name__text { animation: shine 6s cubic-bezier(0.45, 0, 0.35, 1) 1.6s infinite; }
+  .name__text { animation: shine 3.6s cubic-bezier(0.45, 0, 0.35, 1) 1.6s infinite; }
   .hero__title { animation: rise 1.1s var(--ease) both; }
   .name { animation: rise 1.1s var(--ease) 0.12s both; }
 }
 @keyframes shine {
   0% { --shine: -120px; }
-  55% { --shine: 360px; }
+  75% { --shine: 360px; }
   100% { --shine: 360px; }
 }
 @keyframes rise {
@@ -374,6 +389,28 @@ html.is-locked .tools__track { animation-play-state: paused; }
   font: 600 clamp(1.3rem, 2.2vw, 1.7rem)/1.2 var(--display);
   letter-spacing: -0.025em;
 }
+
+/* Заголовок раздела сворачивает и разворачивает раздел. Внешне это обычный заголовок */
+.fold {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.fold:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; border-radius: 4px; }
+.section__body {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.6s var(--ease);
+}
+.section__inner { min-height: 0; }
+.section.is-folded .section__body { grid-template-rows: 0fr; }
+.section.is-folded .section__inner,
+.section.is-folding .section__inner { overflow: hidden; }
 .count {
   margin-left: 0.3em;
   color: var(--muted);
@@ -525,7 +562,7 @@ html.is-locked .tools__track { animation-play-state: paused; }
 .reach__label svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .reach__hit { fill: none; stroke: transparent; stroke-width: 20px; pointer-events: stroke; cursor: pointer; }
 .reach__label text {
-  fill: var(--ink);
+  fill: url(#reach-shine);
   font: 700 9.5px var(--display);
   letter-spacing: 0.2em;
   paint-order: stroke;
@@ -542,6 +579,10 @@ html.is-locked .tools__track { animation-play-state: paused; }
 .reach__label:hover text,
 .reach__label:focus-visible text { fill: var(--glint-b); }
 .reach__label:focus-visible { outline-offset: -8px; }
+/* Блик по надписи, как на имени */
+.reach__shine-ink { stop-color: var(--ink); }
+.reach__shine-a { stop-color: var(--glint-a); }
+.reach__shine-b { stop-color: var(--glint-b); }
 
 .badge {
   position: absolute;

@@ -88,7 +88,7 @@ img { display: block; max-width: 100%; }
 .login h1 { margin: 0 0 4px; font: 700 26px/1.1 var(--display); letter-spacing: -0.02em; }
 .login label { display: grid; gap: 6px; color: var(--muted); font-size: 13px; }
 .login .btn { margin-top: 4px; }
-.login .link { justify-self: start; }
+.login__links { display: flex; justify-content: space-between; gap: 12px; }
 .msg { margin: 0; min-height: 1.45em; color: var(--bad); font-size: 14px; }
 .msg--ok { color: var(--ok); }
 
@@ -207,6 +207,41 @@ input::placeholder { color: #a9a6a0; }
 .field { display: grid; gap: 4px; }
 .field__label { color: var(--muted); font-size: 13px; }
 
+/* Теги */
+.tags { display: grid; gap: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  min-height: 34px;
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  font-size: 14px;
+  line-height: 1.2;
+  cursor: pointer;
+}
+.chip small { color: var(--muted); font-size: 12px; }
+.chip:hover { border-color: var(--ink); }
+.chip.is-on { background: var(--ink); border-color: var(--ink); color: #f6f5f3; }
+.chip.is-on small { color: rgba(246, 245, 243, 0.62); }
+.chip--add { justify-content: center; min-width: 34px; font-weight: 600; }
+.is-editing .chip:not(.chip--add) { border-style: dashed; }
+.chip__x { opacity: 0.6; }
+.tagform {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--tile);
+}
+.tagform__msg, .tagform__note { grid-column: 1 / -1; margin: 0; font-size: 13px; }
+.tagform__msg:empty { display: none; }
+.tagform__note { color: var(--muted); }
+
 .check { display: inline-flex; align-items: center; gap: 8px; justify-self: start; cursor: pointer; font-size: 14px; }
 .check input { width: 18px; height: 18px; margin: 0; accent-color: var(--ink); }
 
@@ -215,7 +250,8 @@ input::placeholder { color: #a9a6a0; }
   .work--reels .work__cover { width: 54px; }
   .work__body { display: contents; }
   .work__head { grid-column: 2; align-self: start; flex-wrap: wrap; }
-  .work__cols, .check { grid-column: 1 / -1; }
+  .work__cols, .tags, .check { grid-column: 1 / -1; }
+  .tagform { grid-template-columns: 1fr; }
   .work__cols { grid-template-columns: 1fr; gap: 16px; }
   .top__actions { width: 100%; margin-left: 0; }
   .top__actions .btn { flex: 1; padding: 0 10px; }

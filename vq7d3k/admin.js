@@ -35,10 +35,48 @@ const tagPair = (v) => (Array.isArray(v) || typeof v === 'string'
 const record = (w) => ({ title: pair(w.title), note: pair(w.note), tags: tagPair(w.tags), hidden: !!w.hidden });
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
+// Готовый список тегов: тег ставится нажатием сразу на двух языках.
+// Список можно дополнять прямо в админке, он сохраняется вместе с остальными правками.
+const DEFAULT_TAGS = [
+  { en: 'Idea', ru: 'Идея' },
+  { en: 'Concept', ru: 'Концепция' },
+  { en: 'Script', ru: 'Сценарий' },
+  { en: 'Storyboard', ru: 'Раскадровка' },
+  { en: 'Filming', ru: 'Съёмка' },
+  { en: 'Directing', ru: 'Режиссура' },
+  { en: 'Editing', ru: 'Монтаж' },
+  { en: 'Animation', ru: 'Анимация' },
+  { en: 'Motion design', ru: 'Моушен-дизайн' },
+  { en: 'AI generation', ru: 'AI-генерация' },
+  { en: 'VFX', ru: 'VFX' },
+  { en: '3D', ru: '3D' },
+  { en: 'Color grading', ru: 'Цветокоррекция' },
+  { en: 'Sound design', ru: 'Саунд-дизайн' },
+  { en: 'Voice-over', ru: 'Озвучка' },
+  { en: 'Design', ru: 'Дизайн' },
+  { en: 'Illustration', ru: 'Иллюстрация' },
+  { en: 'Branding', ru: 'Брендинг' },
+  { en: 'Layout', ru: 'Вёрстка' },
+  { en: 'Retouching', ru: 'Ретушь' }
+];
+const tagKey = (s) => str(s).trim().toLowerCase();
+const sameTag = (a, b) => (!!tagKey(a.en) && tagKey(a.en) === tagKey(b.en)) || (!!tagKey(a.ru) && tagKey(a.ru) === tagKey(b.ru));
+// Место тега в тегах работы (там два списка, английский и русский, в одном порядке)
+function tagAt(tags, t) {
+  const n = Math.max(tags.en.length, tags.ru.length);
+  for (let i = 0; i < n; i++) if (sameTag({ en: tags.en[i], ru: tags.ru[i] }, t)) return i;
+  return -1;
+}
+function toggleTag(rec, t) {
+  const i = tagAt(rec.tags, t);
+  if (i >= 0) { rec.tags.en.splice(i, 1); rec.tags.ru.splice(i, 1); }
+  else { rec.tags.en.push(t.en); rec.tags.ru.push(t.ru); }
+}
+
 const meta = {};         // id -> { work, group }: исходная запись из works.js
 const defaults = {};     // id -> тексты из works.js
 const defaultOrder = {}; // раздел -> порядок из works.js
-const state = { order: {}, works: {} };
+const state = { order: {}, works: {}, tagList: [] };
 let savedJSON = '';
 let ready = false;
 let saving = false;
@@ -61,6 +99,17 @@ function useContent(content) {
     state.order[group] = merged[group].map((w) => w.id);
     merged[group].forEach((w) => { state.works[w.id] = record(w); });
   });
+  const list = content && Array.isArray(content.tagList) ? content.tagList : DEFAULT_TAGS;
+  state.tagList = list.filter((t) => t && (t.en || t.ru))
+    .map((t) => ({ en: str(t.en || t.ru).trim(), ru: str(t.ru || t.en).trim() }));
+  // Теги работ, которых нет в списке, добавляем в список, чтобы их было видно и можно было снять
+  Object.values(state.works).forEach(({ tags }) => {
+    const n = Math.max(tags.en.length, tags.ru.length);
+    for (let i = 0; i < n; i++) {
+      const t = { en: tags.en[i] || tags.ru[i], ru: tags.ru[i] || tags.en[i] };
+      if (!state.tagList.some((x) => sameTag(x, t))) state.tagList.push(t);
+    }
+  });
   savedJSON = JSON.stringify(build());
 }
 
@@ -79,7 +128,9 @@ function build() {
   SC.GROUPS.forEach((group) => {
     if (!same(state.order[group], defaultOrder[group])) order[group] = state.order[group].slice();
   });
-  return { v: 1, works, order };
+  const out = { v: 1, works, order };
+  if (!same(state.tagList, DEFAULT_TAGS)) out.tagList = state.tagList.map((t) => ({ en: t.en, ru: t.ru }));
+  return out;
 }
 
 const isDirty = () => ready && JSON.stringify(build()) !== savedJSON;
@@ -234,10 +285,114 @@ function column(rec, lang) {
   col.append(
     el('span', 'work__lang', ru ? 'Русский' : 'English'),
     input('Название', rec.title[lang], (v) => { rec.title[lang] = v; }, ru ? rec.title.en : ''),
-    input('Подпись', rec.note[lang], (v) => { rec.note[lang] = v; }, ru ? rec.note.en : ''),
-    input('Теги', rec.tags[lang].join(', '), (v) => { rec.tags[lang] = words(v); }, ru ? rec.tags.en.join(', ') : 'через запятую')
+    input('Подпись', rec.note[lang], (v) => { rec.note[lang] = v; }, ru ? rec.note.en : '')
   );
   return col;
+}
+
+/* Теги работы: кнопки из общего списка. «+» открывает панель, где список можно дополнить или почистить */
+
+function tagBlock(id) {
+  const box = el('div', 'tags');
+  box.dataset.id = id;
+  box.append(el('span', 'field__label', 'Теги: нажмите, чтобы поставить или снять. На сайте они будут на английском и на русском'),
+    el('div', 'chips'), tagForm());
+  fillChips(box);
+  return box;
+}
+
+function fillChips(box) {
+  const rec = state.works[box.dataset.id];
+  const editing = box.classList.contains('is-editing');
+  const chips = $('.chips', box);
+  chips.textContent = '';
+  state.tagList.forEach((t) => {
+    const on = tagAt(rec.tags, t) >= 0;
+    const chip = el('button', 'chip' + (on ? ' is-on' : ''));
+    chip.type = 'button';
+    chip.setAttribute('aria-pressed', String(on));
+    chip.append(el('span', '', t.ru));
+    if (tagKey(t.en) !== tagKey(t.ru)) chip.append(el('small', '', t.en));
+    if (editing) {
+      chip.append(el('span', 'chip__x', '×'));
+      chip.title = 'Убрать из списка';
+      chip.addEventListener('click', () => dropTag(t));
+    } else {
+      chip.addEventListener('click', () => {
+        toggleTag(rec, t);
+        fillChips(box);
+        changed();
+        const again = [...$('.chips', box).children].find((c) => c.firstChild && c.firstChild.textContent === t.ru);
+        if (again) again.focus();
+      });
+    }
+    chips.append(chip);
+  });
+  const add = el('button', 'chip chip--add', editing ? 'Готово' : '+');
+  add.type = 'button';
+  add.title = editing ? 'Закрыть панель' : 'Добавить тег в список';
+  add.setAttribute('aria-label', add.title);
+  add.setAttribute('aria-expanded', String(editing));
+  add.addEventListener('click', () => {
+    const open = !box.classList.contains('is-editing');
+    box.classList.toggle('is-editing', open);
+    $('.tagform', box).hidden = !open;
+    fillChips(box);
+    if (open) $('.tagform input', box).focus();
+    else $('.chip--add', box).focus();
+  });
+  chips.append(add);
+}
+
+function refreshChips() {
+  listBox.querySelectorAll('.tags').forEach(fillChips);
+}
+
+function dropTag(t) {
+  const used = Object.keys(state.works).filter((id) => tagAt(state.works[id].tags, t) >= 0);
+  const question = used.length
+    ? 'Тег «' + t.ru + '» стоит у работ: ' + used.length + '. Убрать его из списка и из этих работ?'
+    : 'Убрать тег «' + t.ru + '» из списка?';
+  if (!confirm(question)) return;
+  used.forEach((id) => toggleTag(state.works[id], t));
+  state.tagList = state.tagList.filter((x) => x !== t);
+  refreshChips();
+  changed();
+}
+
+function tagForm() {
+  const form = el('form', 'tagform');
+  form.hidden = true;
+  form.noValidate = true;
+  const en = el('input');
+  en.type = 'text';
+  en.placeholder = 'English, например Editing';
+  en.setAttribute('aria-label', 'Новый тег на английском');
+  const ru = el('input');
+  ru.type = 'text';
+  ru.placeholder = 'Русский, например Монтаж';
+  ru.setAttribute('aria-label', 'Новый тег на русском');
+  const go = el('button', 'btn', 'Добавить в список');
+  go.type = 'submit';
+  const msg = el('p', 'tagform__msg');
+  msg.setAttribute('role', 'status');
+  const note = el('p', 'tagform__note', 'Новый тег появится в списке у всех работ. Если язык один, можно заполнить одно поле. ' +
+    'Чтобы убрать тег из списка, нажмите на него, пока открыта эта панель.');
+  form.append(en, ru, go, msg, note);
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const t = { en: en.value.trim() || ru.value.trim(), ru: ru.value.trim() || en.value.trim() };
+    if (!t.en) { msg.textContent = 'Впишите название тега.'; en.focus(); return; }
+    if (state.tagList.some((x) => sameTag(x, t))) { msg.textContent = 'Такой тег уже есть в списке.'; return; }
+    state.tagList.push(t);
+    en.value = '';
+    ru.value = '';
+    msg.textContent = 'Добавлен: ' + t.ru + '. Не забудьте сохранить.';
+    refreshChips();
+    changed();
+    en.focus();
+  });
+  return form;
 }
 
 function iconButton(act, label, svgPath, onClick, disabled) {
@@ -310,7 +465,7 @@ function workCard(id, i, total) {
   });
   hide.append(box, el('span', '', 'Скрыть с сайта'));
 
-  body.append(head, cols, hide);
+  body.append(head, cols, tagBlock(id), hide);
   card.append(pic, body);
   return card;
 }
@@ -368,6 +523,7 @@ $('#logout').addEventListener('click', async () => {
   ready = false;
   lastSaved = '';
   await signOut(auth);
+  location.href = '../';
 });
 
 window.addEventListener('beforeunload', (e) => {

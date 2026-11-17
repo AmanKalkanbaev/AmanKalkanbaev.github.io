@@ -75,18 +75,18 @@
   </section>
 
   <section class="section wrap" id="motion" data-nav="motion">
-    <div class="section__head"><h2><span data-i18n="motion.h">Motion videos</span><span class="count"></span></h2></div>
-    <div class="grid grid--wide" data-group="motion"></div>
+    <div class="section__head"><h2><button class="fold" type="button" aria-expanded="true" aria-controls="motion-body"><span data-i18n="motion.h">Motion videos</span><span class="count"></span></button></h2></div>
+    <div class="section__body" id="motion-body"><div class="section__inner"><div class="grid grid--wide" data-group="motion"></div></div></div>
   </section>
 
   <section class="section wrap" id="reels" data-nav="reels">
-    <div class="section__head"><h2><span data-i18n="reels.h">Reels</span><span class="count"></span></h2></div>
-    <div class="grid grid--reels" data-group="reels"></div>
+    <div class="section__head"><h2><button class="fold" type="button" aria-expanded="true" aria-controls="reels-body"><span data-i18n="reels.h">Reels</span><span class="count"></span></button></h2></div>
+    <div class="section__body" id="reels-body"><div class="section__inner"><div class="grid grid--reels" data-group="reels"></div></div></div>
   </section>
 
   <section class="section wrap" id="graphics" data-nav="graphics">
-    <div class="section__head"><h2><span data-i18n="graphics.h">Graphic design</span><span class="count"></span></h2></div>
-    <div class="masonry" data-group="graphics"></div>
+    <div class="section__head"><h2><button class="fold" type="button" aria-expanded="true" aria-controls="graphics-body"><span data-i18n="graphics.h">Graphic design</span><span class="count"></span></button></h2></div>
+    <div class="section__body" id="graphics-body"><div class="section__inner"><div class="masonry" data-group="graphics"></div></div></div>
   </section>
 
   <section class="section wrap" id="contact" data-nav="contact" hidden>
@@ -103,6 +103,17 @@
 <div class="reach" id="reach" hidden>
   <a class="reach__label" id="reach-label" href="#contact" data-i18n-aria="contact.h" aria-label="Contacts">
     <svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="reach-shine" gradientUnits="userSpaceOnUse" x1="-30" y1="0" x2="30" y2="0" gradientTransform="translate(-20 0)">
+          <stop offset="0" class="reach__shine-ink"/>
+          <stop offset="0.4" class="reach__shine-a"/>
+          <stop offset="0.6" class="reach__shine-b"/>
+          <stop offset="1" class="reach__shine-ink"/>
+          <animateTransform id="reach-shine-run" attributeName="gradientTransform" type="translate"
+            values="-20 0; 120 0; 120 0" keyTimes="0; 0.75; 1" calcMode="spline"
+            keySplines="0.45 0 0.35 1; 0 0 1 1" dur="3.6s" begin="1.6s" repeatCount="indefinite"/>
+        </linearGradient>
+      </defs>
       <path id="reach-arc" d="M 13 50 A 37 37 0 0 1 87 50" fill="none"/>
       <path class="reach__hit" d="M 13 50 A 37 37 0 0 1 87 50"/>
       <text><textPath href="#reach-arc" startOffset="50%" text-anchor="middle" data-i18n="contact.arc">CONTACTS</textPath></text>

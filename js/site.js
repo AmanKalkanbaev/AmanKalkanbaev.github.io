@@ -266,6 +266,29 @@
     $('#reach').hidden = false;
   }
 
+  /* ---------- Сворачивание разделов ---------- */
+  // Нажатие на заголовок раздела сворачивает его и разворачивает обратно. По умолчанию всё раскрыто.
+
+  const foldTimers = new Map();
+  function setFold(section, folded) {
+    const button = $('.fold', section);
+    const body = $('.section__body', section);
+    if (!button || !body || section.classList.contains('is-folded') === folded) return;
+    section.classList.add('is-folding');
+    section.classList.toggle('is-folded', folded);
+    button.setAttribute('aria-expanded', String(!folded));
+    body.inert = folded;
+    clearTimeout(foldTimers.get(section));
+    foldTimers.set(section, setTimeout(() => {
+      section.classList.remove('is-folding');
+      window.dispatchEvent(new Event('scroll')); // навигация слева пересчитает активный раздел
+    }, calm.matches ? 0 : 650));
+  }
+  $$('.fold').forEach((button) => {
+    const section = button.closest('section');
+    button.addEventListener('click', () => setFold(section, !section.classList.contains('is-folded')));
+  });
+
   /* ---------- Навигация слева ---------- */
   // Линии строятся сами из разделов с атрибутом data-nav: новый раздел появится в навигации без правок здесь.
   // Подсвечен раздел, верх которого прошёл 40% высоты экрана; в самом низу страницы всегда последний.
@@ -284,6 +307,7 @@
       a.append(el('span', 'rail__line'), tip);
       a.addEventListener('click', (e) => {
         e.preventDefault();
+        setFold(section, false);
         scrollTo(section);
       });
       nav.append(a);
@@ -709,10 +733,14 @@
     let last = 0;
     sign.addEventListener('click', () => {
       const now = Date.now();
-      if (now - last < 450) location.href = 'admin/';
+      if (now - last < 450) location.href = 'vq7d3k/';
       last = now;
     });
   })();
+
+  // Блик на надписи «Контакты» сделан SVG-анимацией: настройку «меньше движения» она не видит, выключаем сами
+  const shineRun = $('#reach-shine-run');
+  if (shineRun && calm.matches) shineRun.remove();
 
   /* ---------- Запуск ---------- */
 

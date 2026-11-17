@@ -19,7 +19,10 @@
       <input type="password" id="login-pass" autocomplete="current-password" required>
     </label>
     <button class="btn btn--main" type="submit" id="login-go">Войти</button>
-    <button class="link" type="button" id="login-reset">Забыли пароль?</button>
+    <div class="login__links">
+      <button class="link" type="button" id="login-reset">Забыли пароль?</button>
+      <a class="link" href="../">На сайт</a>
+    </div>
     <p class="msg" id="login-msg" role="alert"></p>
   </form>
 </main>
@@ -38,7 +41,7 @@
   <nav class="tabs" id="tabs" aria-label="Разделы"></nav>
 
   <p class="hint">Правки появляются на сайте сразу после «Сохранить», загружать сайт заново на GitHub не нужно.
-    Теги пишите через запятую. Пустая русская строка = на русском покажется английский текст.</p>
+    Пустая русская строка = на русском покажется английский текст.</p>
 
   <section class="list" id="list"></section>
 </div>
